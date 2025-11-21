@@ -1,0 +1,385 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/not-first/glance-schema/master/schema.json
+
+  pages:
+  - name: Home
+    head-widgets:
+            - type: custom-api
+              title: Upcoming Calendar Events (Primary)
+              cache: 15m
+              template: |
+                {{
+                  $token := newRequest "https://oauth2.googleapis.com/token"
+                    | withHeader "Content-Type" "application/x-www-form-urlencoded"
+                    | withStringBody "client_id=${GOOGLE_CLIENT_ID}&client_secret=${GOOGLE_CLIENT_SECRET}&refresh_token. =${GOOGLE_REFRESH_TOKEN}&grant_type=refresh_token"
+                    | getResponse
+                }}
+
+                {{ if ne $token.Response.StatusCode 200 }}
+                <p>Failed to get token: {{ $token.Response.Status }}</p>
+                {{ else }}
+                {{ $accessToken := $token.JSON.String "access_token" }}
+                {{ $nowtime := now | formatTime "rfc3339" }}
+                {{ $future := offsetNow "720h" | formatTime "rfc3339" }}
+                {{
+                  $events := newRequest "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+                    | withParameter "timeMin" $nowtime
+                    | withParameter "timeMax" $future
+                    | withParameter "singleEvents" "true"
+                    | withParameter "orderBy" "startTime"
+                    | withHeader "Authorization" (print "Bearer " $accessToken)
+                    | getResponse
+                }}
+
+                {{ if ne $events.Response.StatusCode 200 }}
+                  <p>Failed to fetch events: {{ $events.Response.Status }}</p>
+                {{ else }}
+                  <div>
+                    {{ range $events.JSON.Array "items" }}
+                    {{ $start := .String "start.dateTime" }}
+                    {{ $end := .String "end.dateTime" }}
+                    {{ $isAllDay := eq $start "" }}
+                    {{ if $isAllDay }}
+                      {{ $start = print (.String "start.date") | parseLocalTime "DateOnly" }}
+                      {{ $end = print (.String "end.date") | parseLocalTime "DateOnly" }}
+                    {{ else }}
+                      {{ $start = $start | parseTime "rfc3339" }}
+                      {{ $end = $end | parseTime "rfc3339" }}            
+                    {{ end }}
+                    {{ $startDateOnly := $start | formatTime "DateOnly" }}
+                    {{ $endDateOnly := $end | formatTime "DateOnly" }}
+                    {{ $isStartAndEndDateSame := eq $startDateOnly $endDateOnly }}
+
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
+                      <a href="https://calendar.google.com/calendar/u/0" target="_blank" class="size-h1" style="text-align: left;">
+                        {{ .String "summary" }}
+                      </a>
+                      <a href="https://calendar.google.com/calendar/u/0" target="_blank" class="size-h3" style="text-align: right;">
+                        {{ $start | formatTime "Mon, Jan 2 · 3:04 PM" }} 
+                        {{ if $isStartAndEndDateSame }}
+                            - {{ $end | formatTime "3:04 PM" }}
+                          {{ else }}
+                            - {{ $end | formatTime "Mon, Jan 2 · 3:04 PM" }}
+                        {{ end }}
+                      </a>
+                     
+                      </div>
+                    </div>
+                  {{ end }}
+                  </div>
+                {{ end }}
+                {{ end }}
+
+
+    columns:
+
+      # -----------------------
+      # SMALL COLUMN
+      # -----------------------
+      - size: small
+        widgets:
+          - type: server-stats
+            servers:
+              - type: local
+                name: Pi 4b
+                hide-mountpoints-by-default: true
+                mountpoints:
+                  "/":
+                    hide: false
+                  "/ssd":
+                    hide: false
+                
+          - type: custom-api
+            title: Tailscale Devices
+            title-url: https://login.tailscale.com/admin/machines
+            cache: 10s
+            url: https://api.tailscale.com/api/v2/tailnet/-/devices
+            headers:
+                Authorization: Bearer ${TAILSCALE_API_KEY}
+            template: |
+                {{/* User Variables */}}
+                {{/* Set to true if you'd like an indicator for online devices */}}
+                {{ $enableOnlineIndicator := true }}
+
+                <style>
+                .device-info-container {
+                    position: relative;
+                    overflow: hidden;
+                    height: 1.5em;
+                }
+
+                .device-info {
+                    display: flex;
+                    transition: transform 0.2s ease, opacity 0.2s ease;
+                }
+
+                .device-ip {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    transform: translateY(-100%);
+                    opacity: 0;
+                    transition: transform 0.2s ease, opacity 0.2s ease;
+                }
+
+                .device-info-container:hover .device-info {
+                    transform: translateY(100%);
+                    opacity: 0;
+                }
+
+                .device-info-container:hover .device-ip {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+
+                .update-indicator {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    background-color: var(--color-primary);
+                    display: inline-block;
+                    margin-left: 4px;
+                    vertical-align: middle;
+                }
+
+                .offline-indicator {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    background-color: var(--color-negative);
+                    display: inline-block;
+                    margin-left: 4px;
+                    vertical-align: middle;
+                }
+
+                .online-indicator {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    background-color: var(--color-positive);
+                    display: inline-block;
+                    margin-left: 4px;
+                    vertical-align: middle;
+                }
+
+                .device-name-container {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                .indicators-container {
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                }
+                </style>
+                <ul class="list list-gap-10 collapsible-container" data-collapse-after="4">
+                {{ range .JSON.Array "devices" }}
+                <li>
+                    <div class="flex items-center gap-10">
+                    <div class="device-name-container grow">
+                        <span class="size-h4 block text-truncate color-primary">
+                        {{ findMatch "^([^.]+)" (.String "name") }}
+                        </span>
+                        <div class="indicators-container">
+                        {{ if (.Bool "updateAvailable") }}
+                        <span class="update-indicator" data-popover-type="text" data-popover-text="Update Available"></span>
+                        {{ end }}
+
+                        {{ $lastSeen := .String "lastSeen" | parseTime "rfc3339" }}
+                        {{ if not ($lastSeen.After (offsetNow "-10s")) }}
+                        {{ $lastSeenTimezoned := $lastSeen.In now.Location }}
+                        <span class="offline-indicator" data-popover-type="text"
+                            data-popover-text="Offline - Last seen {{ $lastSeenTimezoned.Format " Jan 2 3:04pm" }}"></span>
+                        {{ else if $enableOnlineIndicator }}
+                            <span class="online-indicator" data-popover-type="text" data-popover-text="Online"></span>
+                        {{ end }}
+                        </div>
+                    </div>
+                </div>
+                <div class="device-info-container">
+                    <ul class="list-horizontal-text device-info">
+                    <li>{{ .String "os" }}</li>
+                    <li>{{ .String "user" }}</li>
+                </ul>
+                    <div class="device-ip">
+                        {{ .String "addresses.0"}}
+                    </div>
+                    </div>
+                </li>
+                {{ end }}
+                </ul>
+
+      # -----------------------
+      # FULL COLUMN
+      # -----------------------
+      - size: full
+        widgets:
+            - type: docker-containers
+              cache: 10s
+              title: ARRs
+              hide-by-default: true
+              containers:
+                radarr:
+                  name: Radarr
+                  description: For Movie
+                  url: http://192.168.0.111:7878
+                  same-tab: false
+                  icon: di:radarr
+                  hide: false
+                sonarr:
+                  name: Sonarr
+                  description: For TV Shows
+                  url: http://192.168.0.111:8989
+                  same-tab: false
+                  icon: di:sonarr
+                  hide: false
+                bazarr:
+                  name: Bazarr
+                  description: For Subtitles
+                  url: http://192.168.0.111:6767
+                  same-tab: false
+                  icon: di:bazarr
+                  hide: false
+                prowlarr:
+                  name: Prowlarr
+                  description: For Indexers
+                  url: http://192.168.0.111:9696
+                  same-tab: false
+                  icon: di:prowlarr
+                  hide: false
+
+            - type: docker-containers
+              cache: 10s
+              title: Media
+              hide-by-default: true
+              containers:
+                jellyfin:
+                  name: Jellyfin
+                  description: Media Server
+                  url: http://192.168.0.111:8097
+                  same-tab: false
+                  icon: di:jellyfin
+                  hide: false
+                powerful_kate-main_app-1:
+                  name: Rasa
+                  description: Recommendations Engine
+                  url: http://192.168.0.111:3242
+                  same-tab: false
+                  icon: si:rasa
+                  hide: false
+                  
+            - type: docker-containers
+              cache: 10m
+              title: Downloaders
+              hide-by-default: true
+              containers:
+                linuxserver-qbittorrent-app-1:
+                  icon: di:qbittorrent
+                  description: Torrent Client
+                  name: qBittorrent
+                  hide: false
+                TelegramDownload:
+                  icon: di:telegram
+                  description: Monitor & Downloader
+                  name: Telegram Files
+                  hide: false
+                  
+            - type: docker-containers
+              cache: 10m
+              hide-by-default: true
+              title: Home
+              containers:
+                big-bear-homebridge:
+                  name: HomeBridge
+                  description: Fuck Apple!!
+                  url: http://192.168.0.111:8581
+                  same-tab: false
+                  icon: di:homebridge
+                  hide: false
+                big-bear-zigbee2mqtt:
+                  name: Zigbee2MQTT
+                  icon: di:zigbee2mqtt
+                  hide: false
+                mosquitto:
+                  name: Mosquitto
+                  icon: di:mosquitto
+                  hide: false
+              
+            - type: docker-containers
+              title: Misc
+              cache: 10s
+              hide-by-default: true
+              containers:
+                isponsorblocktv-isponsorblocktv-1:
+                  name: iSponsorBlock TV
+                  description: Fuck Sponsors!!
+                  icon: https://sponsor.ajay.app/LogoSponsorBlock256px.png
+                  hide: false
+                tailscale:
+                  name: Tailscale
+                  description: I am in home... or am I?
+                  icon: di:tailscale
+                  hide: false
+                big-bear-filebrowser:
+                  name: File Browser
+                  url: http://192.168.0.111:8555
+                  same-tab: false
+                  icon: di:filebrowser
+                  hide: false
+
+
+
+      # -----------------------
+      # SMALL COLUMN
+      # -----------------------
+      - size: small
+        widgets:
+          - type: group
+            widgets:
+              - type: clock
+                title: Clock
+                hour-format: 12h
+                    
+              - type: custom-api
+                title: Percent
+                body-type: string
+                skip-json-validation: true
+                cache: 1s
+                template: |
+                  {{ $localTime := now }}
+                  {{ $secondsPerDay := 86400 }}
+                  {{ $elapsedSeconds := add (mul $localTime.Hour 3600) (mul $localTime.Minute 60) | add $localTime.Second }}
+                  {{ $dayProgress := div (mul $elapsedSeconds 100.0) $secondsPerDay }}
+
+                  {{ $gradient := "" }}
+                  {{ if lt $dayProgress 10.0 }}
+                    {{ $gradient = "#70a1ff" }}
+                  {{ else if lt $dayProgress 25.0 }}
+                    {{ $gradient = "#ff6b6b, #70a1ff" }}
+                  {{ else if lt $dayProgress 50.0 }}
+                    {{ $gradient = "#ff6b6b, #f8e71c, #7ed6df" }}
+                  {{ else }}
+                    {{ $gradient = "#ff6b6b, #f8e71c, #7ed6df, #70a1ff" }}
+                  {{ end }}
+
+                  <div style="text-align: center;">
+                    <div style="width: 100%; height: 12px; background: #23262F; border:1px solid gray; border-radius: 10px; overflow: hidden;">
+                      <div style="
+                        height: 100%;
+                        width: {{ $dayProgress }}%;
+                        background: linear-gradient(90deg, {{ $gradient }});
+                      "></div>
+                    </div>
+                    <div class="size-h3" style="margin-top: 6px;">{{ printf "%.2f" $dayProgress }}% of the day has passed</div>
+                  </div>
+                
+          - type: calendar
+            hide-header: true
+            first-day-of-week: sunday
+
+          - type: weather
+            units: metric
+            hide-header: true
+            hour-format: 12h
+            location: Bengaluru, India
