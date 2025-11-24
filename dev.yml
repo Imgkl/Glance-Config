@@ -1,0 +1,246 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/not-first/glance-schema/master/schema.json
+
+  pages:
+  - name: Work & Personal
+    head-widgets:
+          - type: custom-api
+            title: Calendar
+            cache: 2m
+            template: |
+              {{
+                $tokenWork := newRequest "https://oauth2.googleapis.com/token"
+                  | withHeader "Content-Type" "application/x-www-form-urlencoded"
+                  | withStringBody "client_id=${GOOGLE_CLIENT_ID_WORK}&client_secret=${GOOGLE_CLIENT_SECRET_WORK}&refresh_token=${GOOGLE_REFRESH_TOKEN_WORK}&grant_type=refresh_token"
+                  | getResponse
+              }}
+              {{
+                $tokenPersonal := newRequest "https://oauth2.googleapis.com/token"
+                  | withHeader "Content-Type" "application/x-www-form-urlencoded"
+                  | withStringBody "client_id=${GOOGLE_CLIENT_ID_PERSONAL}&client_secret=${GOOGLE_CLIENT_SECRET_PERSONAL}&refresh_token=${GOOGLE_REFRESH_TOKEN_PERSONAL}&grant_type=refresh_token"
+                  | getResponse
+              }}
+              
+              {{ $nowtime := now | formatTime "rfc3339" }}
+              {{ $future := offsetNow "720h" | formatTime "rfc3339" }}
+              
+              {{ if ne $tokenWork.Response.StatusCode 200 }}
+                <p>Failed to get Work token: {{ $tokenWork.Response.Status }}</p>
+              {{ else if ne $tokenPersonal.Response.StatusCode 200 }}
+                <p>Failed to get Personal token: {{ $tokenPersonal.Response.Status }}</p>
+              {{ else }}
+                {{ $accessTokenWork := $tokenWork.JSON.String "access_token" }}
+                {{ $accessTokenPersonal := $tokenPersonal.JSON.String "access_token" }}
+                
+                {{
+                  $eventsWork := newRequest "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+                    | withParameter "timeMin" $nowtime
+                    | withParameter "timeMax" $future
+                    | withParameter "singleEvents" "true"
+                    | withParameter "orderBy" "startTime"
+                    | withHeader "Authorization" (print "Bearer " $accessTokenWork)
+                    | getResponse
+                }}
+                {{
+                  $eventsPersonal := newRequest "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+                    | withParameter "timeMin" $nowtime
+                    | withParameter "timeMax" $future
+                    | withParameter "singleEvents" "true"
+                    | withParameter "orderBy" "startTime"
+                    | withHeader "Authorization" (print "Bearer " $accessTokenPersonal)
+                    | getResponse
+                }}
+                
+                <div>
+                  {{/* Compute today's window once */}}
+                  {{ $now := now }}
+                  {{ $todayDateStr := $now | formatTime "DateOnly" }}
+                  {{ $todayStart := print $todayDateStr | parseLocalTime "DateOnly" }}
+                  {{ $todayStartUnix := $todayStart | formatTime "Unix" }}
+                  {{ $tomorrowDateStr := offsetNow "24h" | formatTime "DateOnly" }}
+                  {{ $tomorrowStart := print $tomorrowDateStr | parseLocalTime "DateOnly" }}
+                  {{ $tomorrowStartUnix := $tomorrowStart | formatTime "Unix" }}
+                  
+                  {{/* Process Work Calendar Events */}}
+                  {{ if eq $eventsWork.Response.StatusCode 200 }}
+                    {{ range $eventsWork.JSON.Array "items" }}
+                      {{/* Read raw fields */}}
+                      {{ $startRaw := .String "start.dateTime" }}
+                      {{ $endRaw := .String "end.dateTime" }}
+                      {{ $isAllDay := eq $startRaw "" }}
+                    
+                      {{/* Normalize event start/end to TIME OBJECTS */}}
+                      {{ if $isAllDay }}
+                        {{ $startDate := .String "start.date" }}
+                        {{ $endDate := .String "end.date" }}
+                        {{ if and (ne $startDate "") (ne $endDate "") }}
+                          {{ $start := print $startDate | parseLocalTime "DateOnly" }}
+                          {{ $end := print $endDate | parseLocalTime "DateOnly" }}
+                          {{ $endUnix := $end | formatTime "Unix" }}
+                          {{ $startUnix := $start | formatTime "Unix" }}
+                    
+                          {{/* Intersection with today */}}
+                          {{ if and $start $end $todayStart $tomorrowStart }}
+                            {{ if and (gt $endUnix $todayStartUnix) (lt $startUnix $tomorrowStartUnix) }}
+                              {{ $startDateOnly := $start | formatTime "DateOnly" }}
+                              {{ $endDateOnly := $end | formatTime "DateOnly" }}
+                              {{ $isStartAndEndDateSame := eq $startDateOnly $endDateOnly }}
+                    
+                              {{ $meetingLink := .String "hangoutLink" }}
+                              {{ if eq $meetingLink "" }}
+                                {{ $meetingLink = .String "conferenceData.entryPoints.0.uri" }}
+                              {{ end }}
+                              {{ if eq $meetingLink "" }}
+                                {{ $meetingLink = "https://calendar.google.com/calendar/u/0" }}
+                              {{ end }}
+                              <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
+                                <a href="{{ $meetingLink }}" target="_blank" class="size-h1" style="text-align: left;">
+                                  [Work] {{ .String "summary" }}
+                                </a>
+                                <a href="https://calendar.google.com/calendar/u/0" target="_blank" class="size-h3" style="text-align: right;">
+                                  {{ $start | formatTime "Mon, Jan 2" }}
+                                  {{ if not $isStartAndEndDateSame }}
+                                    - {{ $end | formatTime "Mon, Jan 2" }}
+                                  {{ end }}
+                                </a>
+                              </div>
+                            {{ end }}
+                          {{ end }}
+                        {{ end }}
+                    
+                      {{ else }}
+                        {{ if and (ne $startRaw "") (ne $endRaw "") }}
+                          {{ $start := $startRaw | parseTime "rfc3339" }}
+                          {{ $end := $endRaw | parseTime "rfc3339" }}
+                          {{ $endUnix := $end | formatTime "Unix" }}
+                          {{ $startUnix := $start | formatTime "Unix" }}
+                    
+                          {{/* Intersection with today */}}
+                          {{ if and $start $end $todayStart $tomorrowStart }}
+                            {{ if and (gt $endUnix $todayStartUnix) (lt $startUnix $tomorrowStartUnix) }}
+                              {{ $startDateOnly := $start | formatTime "DateOnly" }}
+                              {{ $endDateOnly := $end | formatTime "DateOnly" }}
+                              {{ $isStartAndEndDateSame := eq $startDateOnly $endDateOnly }}
+                    
+                              {{ $meetingLink := .String "hangoutLink" }}
+                              {{ if eq $meetingLink "" }}
+                                {{ $meetingLink = .String "conferenceData.entryPoints.0.uri" }}
+                              {{ end }}
+                              {{ if eq $meetingLink "" }}
+                                {{ $meetingLink = "https://calendar.google.com/calendar/u/0" }}
+                              {{ end }}
+                              <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
+                                <a href="{{ $meetingLink }}" target="_blank" class="size-h1" style="text-align: left;">
+                                  [Work] {{ .String "summary" }}
+                                </a>
+                                <a href="https://calendar.google.com/calendar/u/0" target="_blank" class="size-h3" style="text-align: right;">
+                                  {{ $start | formatTime "Mon, Jan 2 · 3:04·PM" }}
+                                  {{ if $isStartAndEndDateSame }}
+                                    - {{ $end | formatTime "3:04·PM" }}
+                                  {{ else }}
+                                    - {{ $end | formatTime "Mon, Jan 2 · 3:04·PM" }}
+                                  {{ end }}
+                                </a>
+                              </div>
+                            {{ end }}
+                          {{ end }}
+                        {{ end }}
+                      {{ end }}
+                    {{ end }}
+                  {{ end }}
+                  
+                  {{/* Process Personal Calendar Events */}}
+                  {{ if eq $eventsPersonal.Response.StatusCode 200 }}
+                    {{ range $eventsPersonal.JSON.Array "items" }}
+                      {{/* Read raw fields */}}
+                      {{ $startRaw := .String "start.dateTime" }}
+                      {{ $endRaw := .String "end.dateTime" }}
+                      {{ $isAllDay := eq $startRaw "" }}
+                    
+                      {{/* Normalize event start/end to TIME OBJECTS */}}
+                      {{ if $isAllDay }}
+                        {{ $startDate := .String "start.date" }}
+                        {{ $endDate := .String "end.date" }}
+                        {{ if and (ne $startDate "") (ne $endDate "") }}
+                          {{ $start := print $startDate | parseLocalTime "DateOnly" }}
+                          {{ $end := print $endDate | parseLocalTime "DateOnly" }}
+                          {{ $endUnix := $end | formatTime "Unix" }}
+                          {{ $startUnix := $start | formatTime "Unix" }}
+                    
+                          {{/* Intersection with today */}}
+                          {{ if and $start $end $todayStart $tomorrowStart }}
+                            {{ if and (gt $endUnix $todayStartUnix) (lt $startUnix $tomorrowStartUnix) }}
+                              {{ $startDateOnly := $start | formatTime "DateOnly" }}
+                              {{ $endDateOnly := $end | formatTime "DateOnly" }}
+                              {{ $isStartAndEndDateSame := eq $startDateOnly $endDateOnly }}
+                    
+                              {{ $meetingLink := .String "hangoutLink" }}
+                              {{ if eq $meetingLink "" }}
+                                {{ $meetingLink = .String "conferenceData.entryPoints.0.uri" }}
+                              {{ end }}
+                              {{ if eq $meetingLink "" }}
+                                {{ $meetingLink = "https://calendar.google.com/calendar/u/0" }}
+                              {{ end }}
+                              <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
+                                <a href="{{ $meetingLink }}" target="_blank" class="size-h1" style="text-align: left;">
+                                  [Personal] {{ .String "summary" }}
+                                </a>
+                                <a href="https://calendar.google.com/calendar/u/0" target="_blank" class="size-h3" style="text-align: right;">
+                                  {{ $start | formatTime "Mon, Jan 2" }}
+                                  {{ if not $isStartAndEndDateSame }}
+                                    - {{ $end | formatTime "Mon, Jan 2" }}
+                                  {{ end }}
+                                </a>
+                              </div>
+                            {{ end }}
+                          {{ end }}
+                        {{ end }}
+                    
+                      {{ else }}
+                        {{ if and (ne $startRaw "") (ne $endRaw "") }}
+                          {{ $start := $startRaw | parseTime "rfc3339" }}
+                          {{ $end := $endRaw | parseTime "rfc3339" }}
+                          {{ $endUnix := $end | formatTime "Unix" }}
+                          {{ $startUnix := $start | formatTime "Unix" }}
+                    
+                          {{/* Intersection with today */}}
+                          {{ if and $start $end $todayStart $tomorrowStart }}
+                            {{ if and (gt $endUnix $todayStartUnix) (lt $startUnix $tomorrowStartUnix) }}
+                              {{ $startDateOnly := $start | formatTime "DateOnly" }}
+                              {{ $endDateOnly := $end | formatTime "DateOnly" }}
+                              {{ $isStartAndEndDateSame := eq $startDateOnly $endDateOnly }}
+                    
+                              {{ $meetingLink := .String "hangoutLink" }}
+                              {{ if eq $meetingLink "" }}
+                                {{ $meetingLink = .String "conferenceData.entryPoints.0.uri" }}
+                              {{ end }}
+                              {{ if eq $meetingLink "" }}
+                                {{ $meetingLink = "https://calendar.google.com/calendar/u/0" }}
+                              {{ end }}
+                              <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
+                                <a href="{{ $meetingLink }}" target="_blank" class="size-h1" style="text-align: left;">
+                                  [Personal] {{ .String "summary" }}
+                                </a>
+                                <a href="https://calendar.google.com/calendar/u/0" target="_blank" class="size-h3" style="text-align: right;">
+                                  {{ $start | formatTime "Mon, Jan 2 · 3:04·PM" }}
+                                  {{ if $isStartAndEndDateSame }}
+                                    - {{ $end | formatTime "3:04·PM" }}
+                                  {{ else }}
+                                    - {{ $end | formatTime "Mon, Jan 2 · 3:04·PM" }}
+                                  {{ end }}
+                                </a>
+                              </div>
+                            {{ end }}
+                          {{ end }}
+                        {{ end }}
+                      {{ end }}
+                    {{ end }}
+                  {{ end }}
+                </div>
+              {{ end }}
+
+    columns:
+      - size: full
+        widgets:
+          - type: hacker-news
+            limit: 15
+            collapse-after: 5
