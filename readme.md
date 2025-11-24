@@ -4,9 +4,8 @@ Config yml of Glance Dashboard
 
 ## Home
 
-![Home](home.png)
+![Home](/screenshots/home.png)
 
 ## Media
 
-![Media](media.png)
-
+![Media](/screenshots/media.png)
