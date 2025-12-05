@@ -1416,6 +1416,8 @@
                 url: ${RADARR_URL}
               - title: Sonarr
                 url: ${SONARR_URL}
+              - title: Bazarr
+                url: ${BAZARR_URL}
               - title: Prowlarr
                 url: ${PROWLARR_URL}
             - title: Media Servers

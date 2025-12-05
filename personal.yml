@@ -16,7 +16,7 @@
               {{
                 $tokenPersonal := newRequest "https://oauth2.googleapis.com/token"
                   | withHeader "Content-Type" "application/x-www-form-urlencoded"
-                  | withStringBody "client_id=${GOOGLE_CLIENT_ID_PERSONAL}&client_secret=${GOOGLE_CLIENT_SECRET_PERSONAL}&refresh_token=${GOOGLE_REFRESH_TOKEN_PERSONAL}&grant_type=refresh_token"
+                  | withStringBody "grant_type=refresh_token&client_id=${GOOGLE_CLIENT_ID_PERSONAL}&client_secret=${GOOGLE_CLIENT_SECRET_PERSONAL}&refresh_token=${GOOGLE_REFRESH_TOKEN_PERSONAL}"
                   | getResponse
               }}
               
@@ -25,8 +25,10 @@
               
               {{ if ne $tokenWork.Response.StatusCode 200 }}
                 <p>Failed to get Work token: {{ $tokenWork.Response.Status }}</p>
+                <p>Error: {{ $tokenWork.JSON.String "error" }} - {{ $tokenWork.JSON.String "error_description" }}</p>
               {{ else if ne $tokenPersonal.Response.StatusCode 200 }}
                 <p>Failed to get Personal token: {{ $tokenPersonal.Response.Status }}</p>
+                <p>Error: {{ $tokenPersonal.JSON.String "error" }} - {{ $tokenPersonal.JSON.String "error_description" }}</p>
               {{ else }}
                 {{ $accessTokenWork := $tokenWork.JSON.String "access_token" }}
                 {{ $accessTokenPersonal := $tokenPersonal.JSON.String "access_token" }}
