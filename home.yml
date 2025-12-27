@@ -36,7 +36,7 @@ pages:
                   Authorization: Bearer ${SPEEDTEST_TRACKER_API_TOKEN}
                   Accept: application/json
             options:
-              showPercentageDiff: true
+              showPercentageDiff: false
             template: |
               {{ $showPercentage := .Options.BoolOr "showPercentageDiff" true }}
           
@@ -303,19 +303,19 @@ pages:
         widgets:
             - type: docker-containers
               cache: 10s
-              title: ARRs
+              title: ARRs and Media
               hide-by-default: true
               containers:
                 radarr:
                   name: Radarr
-                  description: For Movie
+                  description: For Movie Downloads
                   url: http://192.168.0.190:1006
                   same-tab: false
                   icon: di:radarr
                   hide: false
                 sonarr:
                   name: Sonarr
-                  description: For TV Shows
+                  description: For TV Shows Downloads
                   url: http://192.168.0.190:1007
                   same-tab: false
                   icon: di:sonarr
@@ -343,6 +343,7 @@ pages:
                   hide: false
                 jellyfin:
                   name: Jellyfin
+                  description: Media Server
                   url: http://192.168.0.190:1009
                   same-tab: false
                   icon: di:jellyfin
