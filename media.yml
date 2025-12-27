@@ -1400,7 +1400,7 @@
             - type: iframe
               source: ${TG_SAVED_MESSAGE}
               title: Telegram
-              height: 573
+              height: 685
 
       # -----------------------
       # SMALL COLUMN
@@ -1420,7 +1420,9 @@
                 url: ${BAZARR_URL}
               - title: Prowlarr
                 url: ${PROWLARR_URL}
-            - title: Media Servers
+              - title: Jellyseerr
+                url: ${JELLYSEERR_URL}
+            - title: Media Server
               links:
               - title: Jellyfin
                 url: ${JELLYFIN_URL}
@@ -1430,6 +1432,10 @@
                 url: ${QBITTORRENT_URL}
               - title: Telegram Files
                 url: ${TELEGRAM_FILES_URL}
+            - title: Files
+              links:
+              - title: File Manager
+                url: ${FILES_URL}
 
           - type: custom-api
             title: "Jellyfin Stats"

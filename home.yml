@@ -1,7 +1,19 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/not-first/glance-schema/master/schema.json
 
-  pages:
+pages:
   - name: Home
+    head-widgets:
+        - type: server-stats
+          servers:
+            - type: local
+              name: Pi5
+              hide-mountpoints-by-default: true
+              mountpoints:
+                "/":
+                  hide: false
+                "/ssd":
+                  hide: false
+                  
     columns:
 
       # -----------------------
@@ -9,17 +21,6 @@
       # -----------------------
       - size: small
         widgets:
-          - type: server-stats
-            servers:
-              - type: local
-                name: Pi 4b
-                hide-mountpoints-by-default: true
-                mountpoints:
-                  "/":
-                    hide: false
-                  "/ssd":
-                    hide: false
-
           - type: custom-api
             cache: 1h
             title: Ookla
@@ -124,6 +125,54 @@
                   <div class="size-h6">PING</div>
               </div>
               </div>
+
+          - type: custom-api
+            title: Torrent VPN
+            cache: 1m
+            url: http://${GLUETUN_URL}/v1/publicip/ip
+            headers:
+              X-API-Key: ${GLUETUN_API_KEY}
+            template: |
+              {{ if eq .Response.StatusCode 200 }}
+                {{ $ip := (.JSON.String "public_ip") }}
+                {{ $city := (.JSON.String "city") }}
+                {{ $country := (.JSON.String "country") }}
+                {{ if eq $ip "" }}
+                  <div>
+                    <div>
+                      <div>
+                        <div class="color-highlight size-h3">
+                          Your VPN is not connected!
+                          <span class="color-negative">●</span> 
+                        </div>
+                      </dv>
+                    </div>
+                  </div>
+                {{ else }}
+                  <div>
+                    <div>
+                      <div>
+                        <div class="color-highlight size-h3">
+                          {{ $ip }}
+                          <span class="color-positive">●</span> 
+                        </div>
+                      </div>
+                      <div class="size-h5">{{ $city }}, {{ $country }}</div>
+                    </div>
+                  </div>
+                {{ end }}
+              {{ else }}
+                <div style="text-align: center; color: var(--color-negative);">
+                  Error: {{ .Response.StatusCode }} - {{ .Response.Status }}
+                </div>
+              {{ end }}
+              
+          - type: dns-stats
+            title: "Adgaurd Home"
+            service: adguard
+            url: http://192.168.0.190:1020
+            username: ${PI_UN}
+            password: ${PI_PW}
                 
           - type: custom-api
             title: Tailscale Devices
@@ -260,50 +309,43 @@
                 radarr:
                   name: Radarr
                   description: For Movie
-                  url: http://192.168.0.111:7878
+                  url: http://192.168.0.190:1006
                   same-tab: false
                   icon: di:radarr
                   hide: false
                 sonarr:
                   name: Sonarr
                   description: For TV Shows
-                  url: http://192.168.0.111:8989
+                  url: http://192.168.0.190:1007
                   same-tab: false
                   icon: di:sonarr
                   hide: false
                 bazarr:
                   name: Bazarr
                   description: For Subtitles
-                  url: http://192.168.0.111:6767
+                  url: http://192.168.0.190:1008
                   same-tab: false
                   icon: di:bazarr
                   hide: false
                 prowlarr:
                   name: Prowlarr
                   description: For Indexers
-                  url: http://192.168.0.111:9696
+                  url: http://192.168.0.190:1005
                   same-tab: false
                   icon: di:prowlarr
                   hide: false
-
-            - type: docker-containers
-              cache: 10s
-              title: Media
-              hide-by-default: true
-              containers:
+                jellyseerr:
+                  name: Jellyseerr
+                  description: Find Movies & TV Shows
+                  url: http://192.168.0.190:1013
+                  same-tab: false
+                  icon: di:jellyseerr
+                  hide: false
                 jellyfin:
                   name: Jellyfin
-                  description: Media Server
-                  url: http://192.168.0.111:8097
+                  url: http://192.168.0.190:1009
                   same-tab: false
                   icon: di:jellyfin
-                  hide: false
-                powerful_kate-main_app-1:
-                  name: Rasa
-                  description: Recommendations Engine
-                  url: http://192.168.0.111:3242
-                  same-tab: false
-                  icon: si:rasa
                   hide: false
                   
             - type: docker-containers
@@ -311,14 +353,14 @@
               title: Downloaders
               hide-by-default: true
               containers:
-                linuxserver-qbittorrent-app-1:
+                qbittorrent:
                   icon: di:qbittorrent
                   description: Torrent Client
-                  url: http://192.168.0.111:8080
+                  url: http://192.168.0.190:1010
                   name: qBittorrent
                   hide: false
-                TelegramDownload:
-                  url: http://192.168.0.111:6543
+                telegram-files:
+                  url: http://192.168.0.190:1014
                   icon: di:telegram
                   description: Monitor & Downloader
                   name: Telegram Files
@@ -329,97 +371,88 @@
               hide-by-default: true
               title: Home
               containers:
-                big-bear-homebridge:
+                homebridge:
                   name: HomeBridge
-                  description: Fuck Apple!!
-                  url: http://192.168.0.111:8581
+                  url: http://192.168.0.190:1019
                   same-tab: false
                   icon: di:homebridge
                   hide: false
-                big-bear-zigbee2mqtt:
+                zigbee2mqtt:
                   name: Zigbee2MQTT
                   icon: di:zigbee2mqtt
-                  url: http://192.168.0.111:8084
+                  url: http://192.168.0.190:1018
                   hide: false
                 mosquitto:
                   name: Mosquitto
                   icon: di:mosquitto
                   hide: false
-              
+                adguardhome:
+                  name: Adgaurd
+                  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/adguard-home.png
+                  url: http://192.168.0.190:1020
+                  hide: false
+            - type: docker-containers
+              title: Utils
+              cache: 10s
+              hide-by-default: true
+              containers:
+                filebrowser:
+                  name: File Browser
+                  url: http://192.168.0.190:1001
+                  same-tab: false
+                  icon: di:filebrowser
+                  hide: false 
+                speedtest-tracker:
+                  name: Speedtest Tracker
+                  url: http://192.168.0.190:1012
+                  same-tab: false
+                  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/speedtest-tracker.png
+                  hide: false
+                linkwarden-linkwarden-1:
+                  name: Linkwarden
+                  url: http://192.168.0.190:1000
+                  same-tab: false
+                  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png
+                  hide: false
+                stirling-pdf:
+                  name: Stirling PDF
+                  url: http://192.168.0.190:1015
+                  same-tab: false
+                  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/stirling-pdf.png
+                  hide: false
             - type: docker-containers
               title: Misc
               cache: 10s
               hide-by-default: true
               containers:
-                isponsorblocktv-isponsorblocktv-1:
-                  name: iSponsorBlock TV
-                  description: Fuck Sponsors!!
-                  icon: https://sponsor.ajay.app/LogoSponsorBlock256px.png
-                  hide: false
                 tailscale:
                   name: Tailscale
-                  description: I am in home... or am I?
-                  icon: di:tailscale
+                  icon: auto-invert di:tailscale
                   hide: false
-                big-bear-filebrowser:
-                  name: File Browser
-                  url: http://192.168.0.111:8555
-                  same-tab: false
-                  icon: di:filebrowser
+                gluetun:
+                  name: Gluetun
+                  icon: di:gluetun
                   hide: false
-
-
-
-      # -----------------------
-      # SMALL COLUMN
-      # -----------------------
-      - size: small
-        widgets:
-          - type: group
-            widgets:
-              - type: clock
-                title: Clock
-                hour-format: 12h
-                    
-              - type: custom-api
-                title: Percent
-                body-type: string
-                skip-json-validation: true
-                cache: 1s
-                template: |
-                  {{ $localTime := now }}
-                  {{ $secondsPerDay := 86400 }}
-                  {{ $elapsedSeconds := add (mul $localTime.Hour 3600) (mul $localTime.Minute 60) | add $localTime.Second }}
-                  {{ $dayProgress := div (mul $elapsedSeconds 100.0) $secondsPerDay }}
-
-                  {{ $gradient := "" }}
-                  {{ if lt $dayProgress 10.0 }}
-                    {{ $gradient = "#70a1ff" }}
-                  {{ else if lt $dayProgress 25.0 }}
-                    {{ $gradient = "#ff6b6b, #70a1ff" }}
-                  {{ else if lt $dayProgress 50.0 }}
-                    {{ $gradient = "#ff6b6b, #f8e71c, #7ed6df" }}
-                  {{ else }}
-                    {{ $gradient = "#ff6b6b, #f8e71c, #7ed6df, #70a1ff" }}
-                  {{ end }}
-
-                  <div style="text-align: center;">
-                    <div style="width: 100%; height: 12px; background: #23262F; border:1px solid gray; border-radius: 10px; overflow: hidden;">
-                      <div style="
-                        height: 100%;
-                        width: {{ $dayProgress }}%;
-                        background: linear-gradient(90deg, {{ $gradient }});
-                      "></div>
-                    </div>
-                    <div class="size-h3" style="margin-top: 6px;">{{ printf "%.2f" $dayProgress }}% of the day has passed</div>
-                  </div>
-                
-          - type: calendar
-            hide-header: true
-            first-day-of-week: sunday
-
-          - type: weather
-            units: metric
-            hide-header: true
-            hour-format: 12h
-            location: Bengaluru, India
+                cup:
+                  name: Cup
+                  icon: di:cup
+                  url: http://192.168.0.190:1003
+                  hide: false
+                warp:
+                  name: WARP
+                  icon: di:cloudflare
+                  hide: false
+                cloudflared-web:
+                  name: Cloudflare
+                  url: http://192.168.0.190:1002
+                  icon: di:cloudflare
+                  hide: false
+                dockge-dockge-1:
+                  name: Dockge
+                  url: http://192.168.0.190:5001
+                  icon: di:dockge
+                  hide: false
+                iSponsorBlockTV:
+                  name: iSponsorBlock TV
+                  icon: https://sponsor.ajay.app/LogoSponsorBlock256px.png
+                  hide: false
