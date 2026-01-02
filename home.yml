@@ -308,42 +308,36 @@ pages:
               containers:
                 radarr:
                   name: Radarr
-                  description: For Movie Downloads
                   url: http://192.168.0.190:1006
                   same-tab: false
                   icon: di:radarr
                   hide: false
                 sonarr:
                   name: Sonarr
-                  description: For TV Shows Downloads
                   url: http://192.168.0.190:1007
                   same-tab: false
                   icon: di:sonarr
                   hide: false
                 bazarr:
                   name: Bazarr
-                  description: For Subtitles
                   url: http://192.168.0.190:1008
                   same-tab: false
                   icon: di:bazarr
                   hide: false
                 prowlarr:
                   name: Prowlarr
-                  description: For Indexers
                   url: http://192.168.0.190:1005
                   same-tab: false
                   icon: di:prowlarr
                   hide: false
                 jellyseerr:
                   name: Jellyseerr
-                  description: Find Movies & TV Shows
                   url: http://192.168.0.190:1013
                   same-tab: false
                   icon: di:jellyseerr
                   hide: false
                 jellyfin:
                   name: Jellyfin
-                  description: Media Server
                   url: http://192.168.0.190:1009
                   same-tab: false
                   icon: di:jellyfin
@@ -356,14 +350,12 @@ pages:
               containers:
                 qbittorrent:
                   icon: di:qbittorrent
-                  description: Torrent Client
                   url: http://192.168.0.190:1010
                   name: qBittorrent
                   hide: false
                 telegram-files:
                   url: http://192.168.0.190:1014
                   icon: di:telegram
-                  description: Monitor & Downloader
                   name: Telegram Files
                   hide: false
                   
@@ -452,6 +444,11 @@ pages:
                   name: Dockge
                   url: http://192.168.0.190:5001
                   icon: di:dockge
+                  hide: false
+                uptime-kuma:
+                  name: Uptime Kuma
+                  url: http://192.168.0.190:1021
+                  icon: di:uptime-kuma
                   hide: false
                 iSponsorBlockTV:
                   name: iSponsorBlock TV
