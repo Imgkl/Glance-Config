@@ -342,6 +342,13 @@ pages:
                   same-tab: false
                   icon: di:jellyfin
                   hide: false
+                rasa-server:
+                  name: Rasa
+                  url: http://192.168.0.190:1022
+                  same-tab: false
+                  icon: si:rasa
+                  hide: false
+                  
                   
             - type: docker-containers
               cache: 10m
@@ -358,7 +365,7 @@ pages:
                   icon: di:telegram
                   name: Telegram Files
                   hide: false
-                  
+
             - type: docker-containers
               cache: 10m
               hide-by-default: true
@@ -384,6 +391,7 @@ pages:
                   icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/adguard-home.png
                   url: http://192.168.0.190:1020
                   hide: false
+                  
             - type: docker-containers
               title: Utils
               cache: 10s
@@ -413,6 +421,7 @@ pages:
                   same-tab: false
                   icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/stirling-pdf.png
                   hide: false
+                  
             - type: docker-containers
               title: Misc
               cache: 10s
@@ -453,4 +462,9 @@ pages:
                 iSponsorBlockTV:
                   name: iSponsorBlock TV
                   icon: https://sponsor.ajay.app/LogoSponsorBlock256px.png
+                  hide: false
+                rx-resume-app:
+                  name: Rx Resume
+                  url: http://192.168.0.190:1023
+                  icon: di:reactive-resume-light
                   hide: false
