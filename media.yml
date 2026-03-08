@@ -1489,7 +1489,7 @@
                 interval: 15             # optional, days
               #   sort-time: asc          # optional, asc or desc (default)
                 #cover-proxy: "https://proxy.example.com/radarrcover" # optional
-                api-base-url: ${RADARR_API_URL}
+                api-base-url: ${RADARR_URL}
                 key: ${RADARR_KEY}
                 url: ${RADARR_URL}       # optional
               template: |
@@ -1937,7 +1937,7 @@
                 interval: 15             # optional, days
               #   sort-time: asc          # optional, asc or desc (default)
                 #cover-proxy: "https://proxy.example.com/radarrcover" # optional
-                api-base-url: ${SONARR_API_URL}
+                api-base-url: ${SONARR_URL}
                 key: ${SONARR_KEY}
                 url: ${SONARR_URL}       # optional
               template: |
@@ -2379,7 +2379,7 @@
             cache: 1m
             options:
               url: "${PROWLARR_URL}"
-              base-url: ${PROWLARR_API_URL}
+              base-url: ${PROWLARR_URL}
               api-key: ${PROWLARR_KEY}
               collapse-after: ${PROWLARR_COLLAPSE_AFTER}
             template: |

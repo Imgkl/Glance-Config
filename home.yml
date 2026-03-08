@@ -129,9 +129,7 @@ pages:
           - type: custom-api
             title: Torrent VPN
             cache: 1m
-            url: http://${GLUETUN_URL}/v1/publicip/ip
-            headers:
-              X-API-Key: ${GLUETUN_API_KEY}
+            url: http://${GLUETUN_IP}/v1/publicip/ip
             template: |
               {{ if eq .Response.StatusCode 200 }}
                 {{ $ip := (.JSON.String "public_ip") }}
@@ -308,37 +306,37 @@ pages:
               containers:
                 radarr:
                   name: Radarr
-                  url: http://192.168.0.190:1006
+                  url: ${RADARR_URL}
                   same-tab: false
                   icon: di:radarr
                   hide: false
                 sonarr:
                   name: Sonarr
-                  url: http://192.168.0.190:1007
+                  url: ${SONARR_URL}
                   same-tab: false
                   icon: di:sonarr
                   hide: false
                 bazarr:
                   name: Bazarr
-                  url: http://192.168.0.190:1008
+                  url: ${BAZARR_URL}
                   same-tab: false
                   icon: di:bazarr
                   hide: false
                 prowlarr:
                   name: Prowlarr
-                  url: http://192.168.0.190:1005
+                  url: ${PROWLARR_URL}
                   same-tab: false
                   icon: di:prowlarr
                   hide: false
                 jellyseerr:
                   name: Jellyseerr
-                  url: http://192.168.0.190:1013
+                  url: ${JELLYSEERR_URL}
                   same-tab: false
                   icon: di:jellyseerr
                   hide: false
                 jellyfin:
                   name: Jellyfin
-                  url: http://192.168.0.190:1009
+                  url: ${JELLYFIN_URL}
                   same-tab: false
                   icon: di:jellyfin
                   hide: false
@@ -357,11 +355,11 @@ pages:
               containers:
                 qbittorrent:
                   icon: di:qbittorrent
-                  url: http://192.168.0.190:1010
+                  url: ${QBITTORRENT_URL}
                   name: qBittorrent
                   hide: false
                 telegram-files:
-                  url: http://192.168.0.190:1014
+                  url: ${TELEGRAM_FILES_URL}
                   icon: di:telegram
                   name: Telegram Files
                   hide: false
@@ -399,13 +397,13 @@ pages:
               containers:
                 filebrowser:
                   name: File Browser
-                  url: http://192.168.0.190:1001
+                  url: ${FILES_URL}
                   same-tab: false
                   icon: di:filebrowser
                   hide: false 
                 speedtest-tracker:
                   name: Speedtest Tracker
-                  url: http://192.168.0.190:1012
+                  url: ${SPEEDTEST_URL}
                   same-tab: false
                   icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/speedtest-tracker.png
                   hide: false
@@ -454,10 +452,10 @@ pages:
                   url: http://192.168.0.190:5001
                   icon: di:dockge
                   hide: false
-                uptime-kuma:
-                  name: Uptime Kuma
+                letterboxd:
+                  name: Letterboxd
                   url: http://192.168.0.190:1021
-                  icon: di:uptime-kuma
+                  icon: auto-invert sh:letterboxd
                   hide: false
                 iSponsorBlockTV:
                   name: iSponsorBlock TV
