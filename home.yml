@@ -128,7 +128,7 @@ pages:
 
           - type: custom-api
             title: Torrent VPN
-            cache: 1m
+            cache: 5s
             url: http://${GLUETUN_IP}/v1/publicip/ip
             template: |
               {{ if eq .Response.StatusCode 200 }}
@@ -143,7 +143,7 @@ pages:
                           Your VPN is not connected!
                           <span class="color-negative">●</span> 
                         </div>
-                      </dv>
+                      </div>
                     </div>
                   </div>
                 {{ else }}
