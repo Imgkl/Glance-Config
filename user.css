@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'Berkeley Mono';
+    src: url('/assets/Berkeley Mono Variable.ttf') format('truetype');
+  }
+  
+  body {
+    font-family: 'Berkeley Mono', monospace;
+  }
+  

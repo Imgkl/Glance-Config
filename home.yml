@@ -168,7 +168,9 @@ pages:
           - type: dns-stats
             title: "Adgaurd Home"
             service: adguard
+            cache: 1s
             url: http://192.168.0.190:1020
+            hide-graph: true
             username: ${PI_UN}
             password: ${PI_PW}
                 
@@ -328,11 +330,11 @@ pages:
                   same-tab: false
                   icon: di:prowlarr
                   hide: false
-                jellyseerr:
-                  name: Jellyseerr
-                  url: ${JELLYSEERR_URL}
+                seerr:
+                  name: Seerr
+                  url: ${SEERR_URL}
                   same-tab: false
-                  icon: di:jellyseerr
+                  icon: di:seerr
                   hide: false
                 jellyfin:
                   name: Jellyfin

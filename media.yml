@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/not-first/glance-schema/master/schema.json
 
-  pages:
+pages:
   - name: Media
     head-widgets:
             - type: custom-api
@@ -1400,7 +1400,7 @@
             - type: iframe
               source: ${TG_SAVED_MESSAGE}
               title: Telegram
-              height: 685
+              height: 680
 
       # -----------------------
       # SMALL COLUMN
@@ -1420,8 +1420,8 @@
                 url: ${BAZARR_URL}
               - title: Prowlarr
                 url: ${PROWLARR_URL}
-              - title: Jellyseerr
-                url: ${JELLYSEERR_URL}
+              - title: Seerr
+                url: ${SEERR_URL}
             - title: Media Server
               links:
               - title: Jellyfin
@@ -2381,7 +2381,7 @@
               url: "${PROWLARR_URL}"
               base-url: ${PROWLARR_URL}
               api-key: ${PROWLARR_KEY}
-              collapse-after: ${PROWLARR_COLLAPSE_AFTER}
+              collapse-after: 9
             template: |
               {{ $apiBaseUrl := .Options.StringOr "base-url" "" }}
               {{ $key := .Options.StringOr "api-key" "" }}
