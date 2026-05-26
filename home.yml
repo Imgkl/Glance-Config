@@ -1,470 +1,486 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/not-first/glance-schema/master/schema.json
 
 pages:
-  - name: Home
-    head-widgets:
-        - type: server-stats
-          servers:
-            - type: local
-              name: Pi5
-              hide-mountpoints-by-default: true
-              mountpoints:
-                "/":
-                  hide: false
-                "/ssd":
-                  hide: false
-                  
-    columns:
+- name: Home
+  head-widgets:
+    - type: server-stats
+      servers:
+        - type: local
+          name: Pi5
+          hide-mountpoints-by-default: true
+          mountpoints:
+            "/":
+              hide: false
+            "/ssd":
+              hide: false
 
-      # -----------------------
-      # SMALL COLUMN
-      # -----------------------
-      - size: small
-        widgets:
-          - type: custom-api
-            cache: 1h
-            title: Ookla
-            title-url: ${SPEEDTEST_URL}
-            url: ${SPEEDTEST_URL}/api/v1/results/latest
-            headers:
-              Authorization: Bearer ${SPEEDTEST_TRACKER_API_TOKEN}
-              Accept: application/json
-            subrequests:
-              stats:
-                url: ${SPEEDTEST_URL}/api/v1/stats
-                headers:
-                  Authorization: Bearer ${SPEEDTEST_TRACKER_API_TOKEN}
-                  Accept: application/json
-            options:
-              showPercentageDiff: false
-            template: |
-              {{ $showPercentage := .Options.BoolOr "showPercentageDiff" true }}
-          
-              {{ $stats := .Subrequest "stats" }}
-              <div class="flex justify-between text-center margin-block-3">
-              <div>
-                  {{ $downloadChange := percentChange ($stats.JSON.Float "data.download.avg_bits") (.JSON.Float "data.download_bits")
-                  }}
-                  {{ if $showPercentage }}
-                  <div
-                  class="size-small {{ if gt $downloadChange 0.0 }}color-positive{{ else if lt $downloadChange 0.0 }}color-negative{{ else }}color-primary{{ end }}"
-                  style="display: inline-flex; align-items: center;">
-                  {{ $downloadChange | printf "%+.1f%%" }}
-                  {{ if gt $downloadChange 0.0 }}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
-                      style="height: 1em; margin-left: 0.25em;" class="size-4">
-                      <path fill-rule="evenodd"
-                      d="M9.808 4.057a.75.75 0 0 1 .92-.527l3.116.849a.75.75 0 0 1 .528.915l-.823 3.121a.75.75 0 0 1-1.45-.382l.337-1.281a23.484 23.484 0 0 0-3.609 3.056.75.75 0 0 1-1.07.01L6 8.06l-3.72 3.72a.75.75 0 1 1-1.06-1.061l4.25-4.25a.75.75 0 0 1 1.06 0l1.756 1.755a25.015 25.015 0 0 1 3.508-2.85l-1.46-.398a.75.75 0 0 1-.526-.92Z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  {{ else if lt $downloadChange 0.0 }}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
-                      style="height: 1em; margin-left: 0.25em;" class="size-4">
-                      <path fill-rule="evenodd"
-                      d="M1.22 4.22a.75.75 0 0 1 1.06 0L6 7.94l2.761-2.762a.75.75 0 0 1 1.158.12 24.9 24.9 0 0 1 2.718 5.556l.729-1.261a.75.75 0 0 1 1.299.75l-1.591 2.755a.75.75 0 0 1-1.025.275l-2.756-1.591a.75.75 0 1 1 .75-1.3l1.097.634a23.417 23.417 0 0 0-1.984-4.211L6.53 9.53a.75.75 0 0 1-1.06 0L1.22 5.28a.75.75 0 0 1 0-1.06Z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  {{ end }}
-                  </div>
-                  {{ end }}
-                  <div class="color-highlight size-h3">{{ .JSON.Float "data.download_bits" | mul 0.000001 | printf "%.1f" }}</div>
-                  <div class="size-h6">DOWNLOAD</div>
-              </div>
-              <div>
-                  {{ $uploadChange := percentChange ($stats.JSON.Float "data.upload.avg_bits") (.JSON.Float "data.upload_bits") }}
-                  {{ if $showPercentage }}
-                  <div
-                  class="size-small {{ if gt $uploadChange 0.0 }}color-positive{{ else if lt $uploadChange 0.0 }}color-negative{{ else }}color-primary{{ end }}"
-                  style="display: inline-flex; align-items: center;">
-                  {{ $uploadChange | printf "%+.1f%%" }}
-                  {{ if gt $uploadChange 0.0 }}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
-                      style="height: 1em; margin-left: 0.25em;" class="size-4">
-                      <path fill-rule="evenodd"
-                      d="M9.808 4.057a.75.75 0 0 1 .92-.527l3.116.849a.75.75 0 0 1 .528.915l-.823 3.121a.75.75 0 0 1-1.45-.382l.337-1.281a23.484 23.484 0 0 0-3.609 3.056.75.75 0 0 1-1.07.01L6 8.06l-3.72 3.72a.75.75 0 1 1-1.06-1.061l4.25-4.25a.75.75 0 0 1 1.06 0l1.756 1.755a25.015 25.015 0 0 1 3.508-2.85l-1.46-.398a.75.75 0 0 1-.526-.92Z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  {{ else if lt $uploadChange 0.0 }}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
-                      style="height: 1em; margin-left: 0.25em;" class="size-4">
-                      <path fill-rule="evenodd"
-                      d="M1.22 4.22a.75.75 0 0 1 1.06 0L6 7.94l2.761-2.762a.75.75 0 0 1 1.158.12 24.9 24.9 0 0 1 2.718 5.556l.729-1.261a.75.75 0 0 1 1.299.75l-1.591 2.755a.75.75 0 0 1-1.025.275l-2.756-1.591a.75.75 0 1 1 .75-1.3l1.097.634a23.417 23.417 0 0 0-1.984-4.211L6.53 9.53a.75.75 0 0 1-1.06 0L1.22 5.28a.75.75 0 0 1 0-1.06Z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  {{ end }}
-                  </div>
-                  {{ end }}
-                  <div class="color-highlight size-h3">{{ .JSON.Float "data.upload_bits" | mul 0.000001 | printf "%.1f" }}</div>
-                  <div class="size-h6">UPLOAD</div>
-              </div>
-              <div>
-                  {{ $pingChange := percentChange ($stats.JSON.Float "data.ping.avg") (.JSON.Float "data.ping") }}
-                  {{ if $showPercentage }}
-                  <div
-                  class="size-small {{ if gt $pingChange 0.0 }}color-negative{{ else if lt $pingChange 0.0 }}color-positive{{ else }}color-primary{{ end }}"
-                  style="display: inline-flex; align-items: center;">
-                  {{ $pingChange | printf "%+.1f%%" }}
-                  {{ if lt $pingChange 0.0 }}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
-                      style="height: 1em; margin-left: 0.25em;" class="size-4">
-                      <path fill-rule="evenodd"
-                      d="M1.22 4.22a.75.75 0 0 1 1.06 0L6 7.94l2.761-2.762a.75.75 0 0 1 1.158.12 24.9 24.9 0 0 1 2.718 5.556l.729-1.261a.75.75 0 0 1 1.299.75l-1.591 2.755a.75.75 0 0 1-1.025.275l-2.756-1.591a.75.75 0 1 1 .75-1.3l1.097.634a23.417 23.417 0 0 0-1.984-4.211L6.53 9.53a.75.75 0 0 1-1.06 0L1.22 5.28a.75.75 0 0 1 0-1.06Z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  {{ else if gt $pingChange 0.0 }}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
-                      style="height: 1em; margin-left: 0.25em;" class="size-4">
-                      <path fill-rule="evenodd"
-                      d="M9.808 4.057a.75.75 0 0 1 .92-.527l3.116.849a.75.75 0 0 1 .528.915l-.823 3.121a.75.75 0 0 1-1.45-.382l.337-1.281a23.484 23.484 0 0 0-3.609 3.056.75.75 0 0 1-1.07.01L6 8.06l-3.72 3.72a.75.75 0 1 1-1.06-1.061l4.25-4.25a.75.75 0 0 1 1.06 0l1.756 1.755a25.015 25.015 0 0 1 3.508-2.85l-1.46-.398a.75.75 0 0 1-.526-.92Z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  {{ end }}
-                  </div>
-                  {{ end }}
-                  <div class="color-highlight size-h3">{{ .JSON.Float "data.ping" | printf "%.0f ms" }}</div>
-                  <div class="size-h6">PING</div>
-              </div>
-              </div>
+  columns:
+    # -----------------------
+    # SMALL COLUMN
+    # -----------------------
+    - size: small
+      widgets:
+        - type: custom-api
+          cache: 1h
+          title: Ookla
+          title-url: ${SPEEDTEST_URL}
+          url: ${SPEEDTEST_URL}/api/v1/results/latest
+          headers:
+            Authorization: Bearer ${SPEEDTEST_TRACKER_API_TOKEN}
+            Accept: application/json
+          subrequests:
+            stats:
+              url: ${SPEEDTEST_URL}/api/v1/stats
+              headers:
+                Authorization: Bearer ${SPEEDTEST_TRACKER_API_TOKEN}
+                Accept: application/json
+          options:
+            showPercentageDiff: false
+          template: |
+            {{ $showPercentage := .Options.BoolOr "showPercentageDiff" true }}
 
-          - type: custom-api
-            title: Torrent VPN
-            cache: 5s
-            url: http://${GLUETUN_IP}/v1/publicip/ip
-            template: |
-              {{ if eq .Response.StatusCode 200 }}
-                {{ $ip := (.JSON.String "public_ip") }}
-                {{ $city := (.JSON.String "city") }}
-                {{ $country := (.JSON.String "country") }}
-                {{ if eq $ip "" }}
-                  <div>
-                    <div>
-                      <div>
-                        <div class="color-highlight size-h3">
-                          Your VPN is not connected!
-                          <span class="color-negative">●</span> 
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                {{ else }}
-                  <div>
-                    <div>
-                      <div>
-                        <div class="color-highlight size-h3">
-                          {{ $ip }}
-                          <span class="color-positive">●</span> 
-                        </div>
-                      </div>
-                      <div class="size-h5">{{ $city }}, {{ $country }}</div>
-                    </div>
-                  </div>
+            {{ $stats := .Subrequest "stats" }}
+            <div class="flex justify-between text-center margin-block-3">
+            <div>
+                {{ $downloadChange := percentChange ($stats.JSON.Float "data.download.avg_bits") (.JSON.Float "data.download_bits")
+                }}
+                {{ if $showPercentage }}
+                <div
+                class="size-small {{ if gt $downloadChange 0.0 }}color-positive{{ else if lt $downloadChange 0.0 }}color-negative{{ else }}color-primary{{ end }}"
+                style="display: inline-flex; align-items: center;">
+                {{ $downloadChange | printf "%+.1f%%" }}
+                {{ if gt $downloadChange 0.0 }}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                    style="height: 1em; margin-left: 0.25em;" class="size-4">
+                    <path fill-rule="evenodd"
+                    d="M9.808 4.057a.75.75 0 0 1 .92-.527l3.116.849a.75.75 0 0 1 .528.915l-.823 3.121a.75.75 0 0 1-1.45-.382l.337-1.281a23.484 23.484 0 0 0-3.609 3.056.75.75 0 0 1-1.07.01L6 8.06l-3.72 3.72a.75.75 0 1 1-1.06-1.061l4.25-4.25a.75.75 0 0 1 1.06 0l1.756 1.755a25.015 25.015 0 0 1 3.508-2.85l-1.46-.398a.75.75 0 0 1-.526-.92Z"
+                    clip-rule="evenodd" />
+                </svg>
+                {{ else if lt $downloadChange 0.0 }}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                    style="height: 1em; margin-left: 0.25em;" class="size-4">
+                    <path fill-rule="evenodd"
+                    d="M1.22 4.22a.75.75 0 0 1 1.06 0L6 7.94l2.761-2.762a.75.75 0 0 1 1.158.12 24.9 24.9 0 0 1 2.718 5.556l.729-1.261a.75.75 0 0 1 1.299.75l-1.591 2.755a.75.75 0 0 1-1.025.275l-2.756-1.591a.75.75 0 1 1 .75-1.3l1.097.634a23.417 23.417 0 0 0-1.984-4.211L6.53 9.53a.75.75 0 0 1-1.06 0L1.22 5.28a.75.75 0 0 1 0-1.06Z"
+                    clip-rule="evenodd" />
+                </svg>
                 {{ end }}
+                </div>
+                {{ end }}
+                <div class="color-highlight size-h3">{{ .JSON.Float "data.download_bits" | mul 0.000001 | printf "%.1f" }}</div>
+                <div class="size-h6">DOWNLOAD</div>
+            </div>
+            <div>
+                {{ $uploadChange := percentChange ($stats.JSON.Float "data.upload.avg_bits") (.JSON.Float "data.upload_bits") }}
+                {{ if $showPercentage }}
+                <div
+                class="size-small {{ if gt $uploadChange 0.0 }}color-positive{{ else if lt $uploadChange 0.0 }}color-negative{{ else }}color-primary{{ end }}"
+                style="display: inline-flex; align-items: center;">
+                {{ $uploadChange | printf "%+.1f%%" }}
+                {{ if gt $uploadChange 0.0 }}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                    style="height: 1em; margin-left: 0.25em;" class="size-4">
+                    <path fill-rule="evenodd"
+                    d="M9.808 4.057a.75.75 0 0 1 .92-.527l3.116.849a.75.75 0 0 1 .528.915l-.823 3.121a.75.75 0 0 1-1.45-.382l.337-1.281a23.484 23.484 0 0 0-3.609 3.056.75.75 0 0 1-1.07.01L6 8.06l-3.72 3.72a.75.75 0 1 1-1.06-1.061l4.25-4.25a.75.75 0 0 1 1.06 0l1.756 1.755a25.015 25.015 0 0 1 3.508-2.85l-1.46-.398a.75.75 0 0 1-.526-.92Z"
+                    clip-rule="evenodd" />
+                </svg>
+                {{ else if lt $uploadChange 0.0 }}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                    style="height: 1em; margin-left: 0.25em;" class="size-4">
+                    <path fill-rule="evenodd"
+                    d="M1.22 4.22a.75.75 0 0 1 1.06 0L6 7.94l2.761-2.762a.75.75 0 0 1 1.158.12 24.9 24.9 0 0 1 2.718 5.556l.729-1.261a.75.75 0 0 1 1.299.75l-1.591 2.755a.75.75 0 0 1-1.025.275l-2.756-1.591a.75.75 0 1 1 .75-1.3l1.097.634a23.417 23.417 0 0 0-1.984-4.211L6.53 9.53a.75.75 0 0 1-1.06 0L1.22 5.28a.75.75 0 0 1 0-1.06Z"
+                    clip-rule="evenodd" />
+                </svg>
+                {{ end }}
+                </div>
+                {{ end }}
+                <div class="color-highlight size-h3">{{ .JSON.Float "data.upload_bits" | mul 0.000001 | printf "%.1f" }}</div>
+                <div class="size-h6">UPLOAD</div>
+            </div>
+            <div>
+                {{ $pingChange := percentChange ($stats.JSON.Float "data.ping.avg") (.JSON.Float "data.ping") }}
+                {{ if $showPercentage }}
+                <div
+                class="size-small {{ if gt $pingChange 0.0 }}color-negative{{ else if lt $pingChange 0.0 }}color-positive{{ else }}color-primary{{ end }}"
+                style="display: inline-flex; align-items: center;">
+                {{ $pingChange | printf "%+.1f%%" }}
+                {{ if lt $pingChange 0.0 }}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                    style="height: 1em; margin-left: 0.25em;" class="size-4">
+                    <path fill-rule="evenodd"
+                    d="M1.22 4.22a.75.75 0 0 1 1.06 0L6 7.94l2.761-2.762a.75.75 0 0 1 1.158.12 24.9 24.9 0 0 1 2.718 5.556l.729-1.261a.75.75 0 0 1 1.299.75l-1.591 2.755a.75.75 0 0 1-1.025.275l-2.756-1.591a.75.75 0 1 1 .75-1.3l1.097.634a23.417 23.417 0 0 0-1.984-4.211L6.53 9.53a.75.75 0 0 1-1.06 0L1.22 5.28a.75.75 0 0 1 0-1.06Z"
+                    clip-rule="evenodd" />
+                </svg>
+                {{ else if gt $pingChange 0.0 }}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
+                    style="height: 1em; margin-left: 0.25em;" class="size-4">
+                    <path fill-rule="evenodd"
+                    d="M9.808 4.057a.75.75 0 0 1 .92-.527l3.116.849a.75.75 0 0 1 .528.915l-.823 3.121a.75.75 0 0 1-1.45-.382l.337-1.281a23.484 23.484 0 0 0-3.609 3.056.75.75 0 0 1-1.07.01L6 8.06l-3.72 3.72a.75.75 0 1 1-1.06-1.061l4.25-4.25a.75.75 0 0 1 1.06 0l1.756 1.755a25.015 25.015 0 0 1 3.508-2.85l-1.46-.398a.75.75 0 0 1-.526-.92Z"
+                    clip-rule="evenodd" />
+                </svg>
+                {{ end }}
+                </div>
+                {{ end }}
+                <div class="color-highlight size-h3">{{ .JSON.Float "data.ping" | printf "%.0f ms" }}</div>
+                <div class="size-h6">PING</div>
+            </div>
+            </div>
+
+        - type: custom-api
+          title: Torrent VPN
+          cache: 5s
+          url: http://${GLUETUN_IP}/v1/publicip/ip
+          template: |
+            {{ if eq .Response.StatusCode 200 }}
+              {{ $ip := (.JSON.String "public_ip") }}
+              {{ $city := (.JSON.String "city") }}
+              {{ $country := (.JSON.String "country") }}
+              {{ if eq $ip "" }}
+                <div>
+                  <div>
+                    <div>
+                      <div class="color-highlight size-h3">
+                        Your VPN is not connected!
+                        <span class="color-negative">●</span> 
+                      </div>
+                    </div>
+                  </div>
+                </div>
               {{ else }}
-                <div style="text-align: center; color: var(--color-negative);">
-                  Error: {{ .Response.StatusCode }} - {{ .Response.Status }}
+                <div>
+                  <div>
+                    <div>
+                      <div class="color-highlight size-h3">
+                        {{ $ip }}
+                        <span class="color-positive">●</span> 
+                      </div>
+                    </div>
+                    <div class="size-h5">{{ $city }}, {{ $country }}</div>
+                  </div>
                 </div>
               {{ end }}
-              
-          - type: dns-stats
-            title: "Adgaurd Home"
-            service: adguard
-            cache: 1s
-            url: http://192.168.0.190:1020
-            hide-graph: true
-            username: ${PI_UN}
-            password: ${PI_PW}
-                
-          - type: custom-api
-            title: Tailscale Devices
-            title-url: https://login.tailscale.com/admin/machines
-            cache: 10s
-            url: https://api.tailscale.com/api/v2/tailnet/-/devices
-            headers:
-                Authorization: Bearer ${TAILSCALE_API_KEY}
-            template: |
-                {{/* User Variables */}}
-                {{/* Set to true if you'd like an indicator for online devices */}}
-                {{ $enableOnlineIndicator := true }}
+            {{ else }}
+              <div style="text-align: center; color: var(--color-negative);">
+                Error: {{ .Response.StatusCode }} - {{ .Response.Status }}
+              </div>
+            {{ end }}
 
-                <style>
-                .device-info-container {
-                    position: relative;
-                    overflow: hidden;
-                    height: 1.5em;
-                }
+        - type: dns-stats
+          title: "Adgaurd Home"
+          service: adguard
+          cache: 1s
+          url: http://192.168.0.190:1020
+          hide-graph: true
+          username: ${PI_UN}
+          password: ${PI_PW}
 
-                .device-info {
-                    display: flex;
-                    transition: transform 0.2s ease, opacity 0.2s ease;
-                }
+        - type: custom-api
+          title: Tailscale Devices
+          title-url: https://login.tailscale.com/admin/machines
+          cache: 10s
+          url: https://api.tailscale.com/api/v2/tailnet/-/devices
+          headers:
+            Authorization: Bearer ${TAILSCALE_API_KEY}
+          template: |
+            {{/* User Variables */}}
+            {{/* Set to true if you'd like an indicator for online devices */}}
+            {{ $enableOnlineIndicator := true }}
 
-                .device-ip {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    transform: translateY(-100%);
-                    opacity: 0;
-                    transition: transform 0.2s ease, opacity 0.2s ease;
-                }
+            <style>
+            .device-info-container {
+                position: relative;
+                overflow: hidden;
+                height: 1.5em;
+            }
 
-                .device-info-container:hover .device-info {
-                    transform: translateY(100%);
-                    opacity: 0;
-                }
+            .device-info {
+                display: flex;
+                transition: transform 0.2s ease, opacity 0.2s ease;
+            }
 
-                .device-info-container:hover .device-ip {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
+            .device-ip {
+                position: absolute;
+                top: 0;
+                left: 0;
+                transform: translateY(-100%);
+                opacity: 0;
+                transition: transform 0.2s ease, opacity 0.2s ease;
+            }
 
-                .update-indicator {
-                    width: 8px;
-                    height: 8px;
-                    border-radius: 50%;
-                    background-color: var(--color-primary);
-                    display: inline-block;
-                    margin-left: 4px;
-                    vertical-align: middle;
-                }
+            .device-info-container:hover .device-info {
+                transform: translateY(100%);
+                opacity: 0;
+            }
 
-                .offline-indicator {
-                    width: 8px;
-                    height: 8px;
-                    border-radius: 50%;
-                    background-color: var(--color-negative);
-                    display: inline-block;
-                    margin-left: 4px;
-                    vertical-align: middle;
-                }
+            .device-info-container:hover .device-ip {
+                transform: translateY(0);
+                opacity: 1;
+            }
 
-                .online-indicator {
-                    width: 8px;
-                    height: 8px;
-                    border-radius: 50%;
-                    background-color: var(--color-positive);
-                    display: inline-block;
-                    margin-left: 4px;
-                    vertical-align: middle;
-                }
+            .update-indicator {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: var(--color-primary);
+                display: inline-block;
+                margin-left: 4px;
+                vertical-align: middle;
+            }
 
-                .device-name-container {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
+            .offline-indicator {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: var(--color-negative);
+                display: inline-block;
+                margin-left: 4px;
+                vertical-align: middle;
+            }
 
-                .indicators-container {
-                    display: flex;
-                    align-items: center;
-                    gap: 4px;
-                }
-                </style>
-                <ul class="list list-gap-10 collapsible-container" data-collapse-after="4">
-                {{ range .JSON.Array "devices" }}
-                <li>
-                    <div class="flex items-center gap-10">
-                    <div class="device-name-container grow">
-                        <span class="size-h4 block text-truncate color-primary">
-                        {{ findMatch "^([^.]+)" (.String "name") }}
-                        </span>
-                        <div class="indicators-container">
-                        {{ if (.Bool "updateAvailable") }}
-                        <span class="update-indicator" data-popover-type="text" data-popover-text="Update Available"></span>
-                        {{ end }}
+            .online-indicator {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: var(--color-positive);
+                display: inline-block;
+                margin-left: 4px;
+                vertical-align: middle;
+            }
 
-                        {{ $lastSeen := .String "lastSeen" | parseTime "rfc3339" }}
-                        {{ if not ($lastSeen.After (offsetNow "-10s")) }}
-                        {{ $lastSeenTimezoned := $lastSeen.In now.Location }}
-                        <span class="offline-indicator" data-popover-type="text"
-                            data-popover-text="Offline - Last seen {{ $lastSeenTimezoned.Format " Jan 2 3:04pm" }}"></span>
-                        {{ else if $enableOnlineIndicator }}
-                            <span class="online-indicator" data-popover-type="text" data-popover-text="Online"></span>
-                        {{ end }}
-                        </div>
+            .device-name-container {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .indicators-container {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            </style>
+            <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+            {{ range .JSON.Array "devices" }}
+            <li>
+                <div class="flex items-center gap-10">
+                <div class="device-name-container grow">
+                    <span class="size-h4 block text-truncate color-primary">
+                    {{ findMatch "^([^.]+)" (.String "name") }}
+                    </span>
+                    <div class="indicators-container">
+                    {{ if (.Bool "updateAvailable") }}
+                    <span class="update-indicator" data-popover-type="text" data-popover-text="Update Available"></span>
+                    {{ end }}
+
+                    {{ $lastSeen := .String "lastSeen" | parseTime "rfc3339" }}
+                    {{ if not ($lastSeen.After (offsetNow "-10s")) }}
+                    {{ $lastSeenTimezoned := $lastSeen.In now.Location }}
+                    <span class="offline-indicator" data-popover-type="text"
+                        data-popover-text="Offline - Last seen {{ $lastSeenTimezoned.Format " Jan 2 3:04pm" }}"></span>
+                    {{ else if $enableOnlineIndicator }}
+                        <span class="online-indicator" data-popover-type="text" data-popover-text="Online"></span>
+                    {{ end }}
                     </div>
                 </div>
-                <div class="device-info-container">
-                    <ul class="list-horizontal-text device-info">
-                    <li>{{ .String "os" }}</li>
-                    <li>{{ .String "user" }}</li>
-                </ul>
-                    <div class="device-ip">
-                        {{ .String "addresses.0"}}
-                    </div>
-                    </div>
-                </li>
-                {{ end }}
-                </ul>
+            </div>
+            <div class="device-info-container">
+                <ul class="list-horizontal-text device-info">
+                <li>{{ .String "os" }}</li>
+                <li>{{ .String "user" }}</li>
+            </ul>
+                <div class="device-ip">
+                    {{ .String "addresses.0"}}
+                </div>
+                </div>
+            </li>
+            {{ end }}
+            </ul>
 
-      # -----------------------
-      # FULL COLUMN
-      # -----------------------
-      - size: full
-        widgets:
-            - type: docker-containers
-              cache: 10s
-              title: ARRs and Media
-              hide-by-default: true
-              containers:
-                radarr:
-                  name: Radarr
-                  url: ${RADARR_URL}
-                  same-tab: false
-                  icon: di:radarr
-                  hide: false
-                sonarr:
-                  name: Sonarr
-                  url: ${SONARR_URL}
-                  same-tab: false
-                  icon: di:sonarr
-                  hide: false
-                bazarr:
-                  name: Bazarr
-                  url: ${BAZARR_URL}
-                  same-tab: false
-                  icon: di:bazarr
-                  hide: false
-                prowlarr:
-                  name: Prowlarr
-                  url: ${PROWLARR_URL}
-                  same-tab: false
-                  icon: di:prowlarr
-                  hide: false
-                seerr:
-                  name: Seerr
-                  url: ${SEERR_URL}
-                  same-tab: false
-                  icon: di:seerr
-                  hide: false
-                jellyfin:
-                  name: Jellyfin
-                  url: ${JELLYFIN_URL}
-                  same-tab: false
-                  icon: di:jellyfin
-                  hide: false
-                rasa-server:
-                  name: Rasa
-                  url: http://192.168.0.190:1022
-                  same-tab: false
-                  icon: si:rasa
-                  hide: false
-                  
-                  
-            - type: docker-containers
-              cache: 10m
-              title: Downloaders
-              hide-by-default: true
-              containers:
-                qbittorrent:
-                  icon: di:qbittorrent
-                  url: ${QBITTORRENT_URL}
-                  name: qBittorrent
-                  hide: false
-                telegram-files:
-                  url: ${TELEGRAM_FILES_URL}
-                  icon: di:telegram
-                  name: Telegram Files
-                  hide: false
+    # -----------------------
+    # FULL COLUMN
+    # -----------------------
+    - size: full
+      widgets:
+        - type: docker-containers
+          cache: 10s
+          title: ARRs and Media
+          hide-by-default: true
+          containers:
+            radarr:
+              name: Radarr
+              url: ${RADARR_URL}
+              same-tab: false
+              icon: di:radarr
+              hide: false
+            sonarr:
+              name: Sonarr
+              url: ${SONARR_URL}
+              same-tab: false
+              icon: di:sonarr
+              hide: false
+            bazarr:
+              name: Bazarr
+              url: ${BAZARR_URL}
+              same-tab: false
+              icon: di:bazarr
+              hide: false
+            prowlarr:
+              name: Prowlarr
+              url: ${PROWLARR_URL}
+              same-tab: false
+              icon: di:prowlarr
+              hide: false
+            seerr:
+              name: Seerr
+              url: ${SEERR_URL}
+              same-tab: false
+              icon: di:seerr
+              hide: false
+            jellyfin:
+              name: Jellyfin
+              url: ${JELLYFIN_URL}
+              same-tab: false
+              icon: di:jellyfin
+              hide: false
+            nocturneserver:
+              name: Nocturne
+              url: http://192.168.0.190:1026
+              same-tab: false
+              icon: https://i.ibb.co/PvKXq0rM/imgi-1-circle-icon-484541-512.png
+              hide: false
 
-            - type: docker-containers
-              cache: 10m
-              hide-by-default: true
-              title: Home
-              containers:
-                homebridge:
-                  name: HomeBridge
-                  url: http://192.168.0.190:1019
-                  same-tab: false
-                  icon: di:homebridge
-                  hide: false
-                zigbee2mqtt:
-                  name: Zigbee2MQTT
-                  icon: di:zigbee2mqtt
-                  url: http://192.168.0.190:1018
-                  hide: false
-                mosquitto:
-                  name: Mosquitto
-                  icon: di:mosquitto
-                  hide: false
-                adguardhome:
-                  name: Adgaurd
-                  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/adguard-home.png
-                  url: http://192.168.0.190:1020
-                  hide: false
-                  
-            - type: docker-containers
-              title: Utils
-              cache: 10s
-              hide-by-default: true
-              containers:
-                filebrowser:
-                  name: File Browser
-                  url: ${FILES_URL}
-                  same-tab: false
-                  icon: di:filebrowser
-                  hide: false 
-                speedtest-tracker:
-                  name: Speedtest Tracker
-                  url: ${SPEEDTEST_URL}
-                  same-tab: false
-                  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/speedtest-tracker.png
-                  hide: false
-                linkwarden-linkwarden-1:
-                  name: Linkwarden
-                  url: http://192.168.0.190:1000
-                  same-tab: false
-                  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png
-                  hide: false
-                stirling-pdf:
-                  name: Stirling PDF
-                  url: http://192.168.0.190:1015
-                  same-tab: false
-                  icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/stirling-pdf.png
-                  hide: false
-                  
-            - type: docker-containers
-              title: Misc
-              cache: 10s
-              hide-by-default: true
-              containers:
-                tailscale:
-                  name: Tailscale
-                  icon: auto-invert di:tailscale
-                  hide: false
-                gluetun:
-                  name: Gluetun
-                  icon: di:gluetun
-                  hide: false
-                cup:
-                  name: Cup
-                  icon: di:cup
-                  url: http://192.168.0.190:1003
-                  hide: false
-                warp:
-                  name: WARP
-                  icon: di:cloudflare
-                  hide: false
-                cloudflared-web:
-                  name: Cloudflare
-                  url: http://192.168.0.190:1002
-                  icon: di:cloudflare
-                  hide: false
-                dockge-dockge-1:
-                  name: Dockge
-                  url: http://192.168.0.190:5001
-                  icon: di:dockge
-                  hide: false
-                letterboxd:
-                  name: Letterboxd
-                  url: http://192.168.0.190:1021
-                  icon: auto-invert sh:letterboxd
-                  hide: false
-                iSponsorBlockTV:
-                  name: iSponsorBlock TV
-                  icon: https://sponsor.ajay.app/LogoSponsorBlock256px.png
-                  hide: false
-                rx-resume-app:
-                  name: Rx Resume
-                  url: http://192.168.0.190:1023
-                  icon: di:reactive-resume-light
-                  hide: false
+        - type: docker-containers
+          cache: 10m
+          title: Downloaders
+          hide-by-default: true
+          containers:
+            qbittorrent:
+              icon: di:qbittorrent
+              url: ${QBITTORRENT_URL}
+              name: qBittorrent
+              hide: false
+            telegram-files:
+              url: ${TELEGRAM_FILES_URL}
+              icon: di:telegram
+              name: Telegram Files
+              hide: false
+
+        - type: docker-containers
+          cache: 10m
+          hide-by-default: true
+          title: Home
+          containers:
+            homebridge:
+              name: HomeBridge
+              url: http://192.168.0.190:1019
+              same-tab: false
+              icon: di:homebridge
+              hide: false
+            zigbee2mqtt:
+              name: Zigbee2MQTT
+              icon: di:zigbee2mqtt
+              url: http://192.168.0.190:1018
+              hide: false
+            mosquitto:
+              name: Mosquitto
+              icon: di:mosquitto
+              hide: false
+            adguardhome:
+              name: Adgaurd
+              icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/adguard-home.png
+              url: http://192.168.0.190:1020
+              hide: false
+
+        - type: docker-containers
+          title: Utils
+          cache: 10s
+          hide-by-default: true
+          containers:
+            filebrowser:
+              name: File Browser
+              url: ${FILES_URL}
+              same-tab: false
+              icon: di:filebrowser
+              hide: false
+            speedtest-tracker:
+              name: Speedtest Tracker
+              url: ${SPEEDTEST_URL}
+              same-tab: false
+              icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/speedtest-tracker.png
+              hide: false
+            linkwarden-linkwarden-1:
+              name: Linkwarden
+              url: http://192.168.0.190:1000
+              same-tab: false
+              icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/linkwarden.png
+              hide: false
+            stirling-pdf:
+              name: Stirling PDF
+              url: http://192.168.0.190:1015
+              same-tab: false
+              icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/stirling-pdf.png
+              hide: false
+        - type: docker-containers
+          title: Misc
+          cache: 10s
+          hide-by-default: true
+          containers:
+            duplicati:
+              name: Duplicati
+              url: http://192.168.0.190:1025
+              same-tab: false
+              icon: https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/duplicati-dark.png
+              hide: false
+            tailscale:
+              name: Tailscale
+              icon: auto-invert di:tailscale
+              hide: false
+            gluetun:
+              name: Gluetun
+              icon: di:gluetun
+              hide: false
+            cup:
+              name: Cup
+              icon: di:cup
+              url: http://192.168.0.190:1003
+              hide: false
+            cloudflared-web:
+              name: Cloudflare
+              url: http://192.168.0.190:1002
+              icon: di:cloudflare
+              hide: false
+            dockge-dockge-1:
+              name: Dockge
+              url: http://192.168.0.190:5001
+              icon: di:dockge
+              hide: false
+            letterboxd:
+              name: Letterboxd
+              url: http://192.168.0.190:1021
+              icon: auto-invert sh:letterboxd
+              hide: false
+            jellyfin-posters:
+              name: Jellyfin Posters
+              url: ${JELLYFIN_POSTERS_URL}
+              same-tab: false
+              icon: di:jellyfin
+              hide: false
+            jellytinder:
+              name: JellyTinder
+              url: ${JELLYTINDER_URL}
+              same-tab: false
+              icon: di:jellyfin
+              hide: false
+            iSponsorBlockTV:
+              name: iSponsorBlock TV
+              icon: https://sponsor.ajay.app/LogoSponsorBlock256px.png
+              hide: false
+            rx-resume-app:
+              name: Rx Resume
+              url: http://192.168.0.190:1023
+              icon: di:reactive-resume-light
+              hide: false
+            umami:
+              name: Umami
+              icon: di:umami
+              url: http://192.168.0.190:1015
+              hide: false
