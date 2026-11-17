@@ -545,13 +545,7 @@ pages:
                       {{ $thumbURL = concat $baseURL "/Items/" $itemID "/Images/Primary?api_key=" $apiKey }}
                     {{ end }}
 
-                    {{ $imageTag := $item.String "ImageTags.Primary" }}
-                    {{ if and (eq $mediaType "Episode") (eq $mode "latest") }}
-                      {{ $imageTag = $item.String "SeriesPrimaryImageTag" }}
-                    {{ end }}
-                    {{ if ne $imageTag "" }}
-                      {{ $thumbURL = concat $thumbURL "&tag=" $imageTag }}
-                    {{ end }}
+                    {{ $thumbURL = jellyfinPrimaryImageURL $thumbURL $item $itemID }}
 
                     <a class="card widget-content-frame" href="{{ $linkURL | safeURL }}">
                     {{ if $showThumbnail }}
@@ -797,13 +791,7 @@ pages:
                       {{ $thumbURL = concat $baseURL "/Items/" $itemID "/Images/Primary?api_key=" $apiKey }}
                     {{ end }}
 
-                    {{ $imageTag := $item.String "ImageTags.Primary" }}
-                    {{ if and (eq $mediaType "Episode") (eq $mode "latest") }}
-                      {{ $imageTag = $item.String "SeriesPrimaryImageTag" }}
-                    {{ end }}
-                    {{ if ne $imageTag "" }}
-                      {{ $thumbURL = concat $thumbURL "&tag=" $imageTag }}
-                    {{ end }}
+                    {{ $thumbURL = jellyfinPrimaryImageURL $thumbURL $item $itemID }}
 
                     <a class="card widget-content-frame" href="{{ $linkURL | safeURL }}">
                     {{ if $showThumbnail }}
@@ -1117,15 +1105,11 @@ pages:
                       {{ end }}
 
                       {{ $thumbID := $item.String "Id" }}
-                      {{ $imageTag := $item.String "ImageTags.Primary" }}
                       {{ if $isShows }}
                         {{ $thumbID  = $item.String "SeasonId" }}
-                        {{ $imageTag = $item.String "ParentPrimaryImageTag" }}
                       {{ end }}
                       {{ $thumbURL = concat $baseURL "/Items/" $thumbID "/Images/Primary?api_key=" $apiKey }}
-                      {{ if ne $imageTag "" }}
-                        {{ $thumbURL = concat $thumbURL "&tag=" $imageTag }}
-                      {{ end }}
+                      {{ $thumbURL = jellyfinPrimaryImageURL $thumbURL $item $thumbID }}
 
                       {{ $time := $item.String "UserData.LastPlayedDate" }}
                       {{ if $timeAbsolute }}
