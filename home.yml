@@ -395,11 +395,11 @@ pages:
           cache: 10s
           hide-by-default: true
           containers:
-            filebrowser:
-              name: File Browser
+            filebrowser-quantum:
+              name: filebrowser
               url: ${FILES_URL}
               same-tab: false
-              icon: di:filebrowser
+              icon: di:filebrowser-quantum
               hide: false
             speedtest-tracker:
               name: Speedtest Tracker
